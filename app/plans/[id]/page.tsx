@@ -15,7 +15,8 @@ export default function PlanDetailPage() {
   const router = useRouter();
   const { user } = useUser();
   const [plan, setPlan] = useState<Plan | null>(null);
-  const [state, setState] = useState<"loading" | "ready" | "missing">("loading");
+  const [state, setState] = useState<"loading" | "ready" | "missing" | "error">("loading");
+　const [errMsg, setErrMsg] = useState("");
 
   useEffect(() => {
     supabase
@@ -23,12 +24,15 @@ export default function PlanDetailPage() {
       .select(PLAN_SELECT)
       .eq("id", id)
       .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setPlan(data as unknown as Plan);
-          setState("ready");
-        } else setState("missing");
-      });
+      .then(({ data, error }) => {
+  if (error) {
+    setErrMsg(`${error.code}: ${error.message}`);
+    setState("error");
+  } else if (data) {
+    setPlan(data as unknown as Plan);
+    setState("ready");
+  } else setState("missing");
+});
   }, [id]);
 
   async function remove() {
@@ -38,6 +42,8 @@ export default function PlanDetailPage() {
   }
 
   if (state === "loading") return <p className="muted">読み込み中…</p>;
+  if (state === "error")
+  return <p className="notice notice-error" role="alert">プランを読み込めませんでした({errMsg})</p>;
   if (state === "missing" || !plan)
     return (
       <div className="empty">
