@@ -13,4 +13,4 @@ export type Plan = {
   likes: { user_id: string }[];
 };
 
-export const PLAN_SELECT = "*, profiles(display_name), likes(user_id)";
+export const PLAN_SELECT = "*, profiles!plans_user_id_fkey(display_name), likes(user_id)";
